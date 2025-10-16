@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星辰抽獎系統</title>
+    
+    <style>
+        body {
+            /* 深邃的午夜藍背景 */
+            background-color: #0a192f;
+            color: #e6f1ff; /* 整體文字改為柔和的白色 */
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .lottery-container {
+            text-align: center;
+            /* 稍微亮一點的星雲藍 */
+            background-color: #172a45;
+            padding: 20px 40px 40px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* 陰影加深，更有立體感 */
+            width: 90%;
+            max-width: 600px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            /* 明亮的星光銀/淡紫色標題 */
+            color: #a7b5ff;
+        }
+
+        .settings-container {
+            margin-bottom: 20px;
+        }
+
+        .edit-panel {
+            background-color: #0a192f;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .edit-panel textarea {
+            width: 95%;
+            height: 150px;
+            background-color: #e6f1ff;
+            border: 2px solid #a7b5ff;
+            border-radius: 5px;
+            font-size: 1em;
+            padding: 10px;
+            color: #0a192f; /* 輸入框文字為深色 */
+        }
+
+        .edit-panel p {
+            font-size: 0.9em;
+            color: #8892b0;
+            margin-top: 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        .display-board {
+            background-color: #0a192f;
+            /* 邊框顏色與標題一致 */
+            border: 3px solid #a7b5ff;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #winner-display {
+            font-size: 3em;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .winner-placeholder {
+            color: #8892b0;
+            font-size: 1.5em;
+        }
+
+        .btn {
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin: 5px;
+        }
+        
+        #draw-button {
+            /* 神秘的宇宙紫 */
+            background-color: #BF55EC;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            box-shadow: 0 5px #8A2BE2;
+        }
+        #draw-button:hover { background-color: #9B30FF; }
+        #draw-button:active { transform: translateY(2px); box-shadow: 0 3px #8A2BE2; }
+        #draw-button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: 0 5px #7f8c8d; }
+
+        /* 沉穩的彗星藍 */
+        #edit-list-button { background-color: #3A75C4; box-shadow: 0 4px #265086; }
+        #edit-list-button:hover { background-color: #265086; }
+
+        /* 清亮的極光青 */
+        #save-list-button { background-color: #64ffda; color: #0a192f; box-shadow: 0 4px #11a387; }
+        #save-list-button:hover { background-color: #11a387; }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #8892b0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lottery-container">
+        <header>
+            <h1>星辰抽獎系統</h1>
+            <p>公平、公正、公開 不重複</p>
+        </header>
+
+        <main>
+            <div class="settings-container">
+                <button id="edit-list-button" class="btn">編輯/查看名單</button>
+                <div id="edit-panel" class="edit-panel hidden">
+                    <p>請在此輸入所有參加者的名字，一行一個。</p>
+                    <textarea id="participants-input" placeholder="例如：&#10;星際領航員&#10;銀河探險家&#10;時空旅人"></textarea>
+                    <button id="save-list-button" class="btn">儲存名單</button>
+                </div>
+            </div>
+
+            <div class="display-board">
+                <div id="winner-display" class="winner-placeholder">請先設定名單</div>
+            </div>
+            <button id="draw-button" class="btn">開始抽獎！</button>
+        </main>
+
+        <footer>
+            <p>由AI一半打造</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 預設名單 (只有在使用者第一次使用時才會出現) ---
+        const defaultParticipants = [
+            '星際領航員', '銀河探險家', '時空旅人', '光年之外', '闇黑物質'
+        ];
+
+        // --- DOM 元件 ---
+        const winnerDisplay = document.getElementById('winner-display');
+        const drawButton = document.getElementById('draw-button');
+        const editListButton = document.getElementById('edit-list-button');
+        const saveListButton = document.getElementById('save-list-button');
+        const editPanel = document.getElementById('edit-panel');
+        const participantsInput = document.getElementById('participants-input');
+        
+        // --- 核心變數 ---
+        let participants = [];
+        let remainingParticipants = [];
+        let intervalId = null;
+        let isDrawing = false;
+        const STORAGE_KEY = 'star_lottery_participants_list';
+
+        // --- 核心功能函數 ---
+        function loadParticipants() {
+            const savedList = localStorage.getItem(STORAGE_KEY);
+            if (savedList) {
+                participants = JSON.parse(savedList);
+            } else {
+                participants = [...defaultParticipants];
+            }
+            if (participants.length === 0) {
+                 participants = [...defaultParticipants];
+            }
+            participantsInput.value = participants.join('\n');
+            resetLottery();
+        }
+
+        function saveParticipants() {
+            const inputText = participantsInput.value;
+            const newParticipants = inputText.split('\n')
+                                           .map(name => name.trim())
+                                           .filter(name => name !== '');
+            if (newParticipants.length === 0) {
+                alert('名單不能是空的！請至少輸入一個名字。');
+                return;
+            }
+            participants = newParticipants;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
+            alert(`名單已更新！總共有 ${participants.length} 位參加者。`);
+            editPanel.classList.add('hidden');
+            resetLottery();
+        }
+
+        function resetLottery() {
+            remainingParticipants = [...participants];
+            drawButton.disabled = remainingParticipants.length === 0;
+            if (remainingParticipants.length > 0) {
+                winnerDisplay.textContent = '幸運兒是誰？';
+                winnerDisplay.classList.add('winner-placeholder');
+            } else {
+                winnerDisplay.textContent = '請先編輯並儲存名單！';
+                winnerDisplay.classList.add('winner-placeholder');
+            }
+        }
+        
+        // --- 事件監聽 ---
+        editListButton.addEventListener('click', () => {
+            editPanel.classList.toggle('hidden');
+        });
+
+        saveListButton.addEventListener('click', saveParticipants);
+
+        drawButton.addEventListener('click', () => {
+            if (isDrawing || remainingParticipants.length === 0) return;
+            isDrawing = true;
+            drawButton.disabled = true;
+            winnerDisplay.classList.remove('winner-placeholder');
+
+            intervalId = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * remainingParticipants.length);
+                winnerDisplay.textContent = remainingParticipants[randomIndex];
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(intervalId);
+                const winnerIndex = Math.floor(Math.random() * remainingParticipants.length);
+                const winner = remainingParticipants[winnerIndex];
+                winnerDisplay.textContent = winner;
+                winnerDisplay.style.transform = 'scale(1.2)';
+                winnerDisplay.style.color = '#f1c40f'; // 中獎者依然是璀璨的金色
+                remainingParticipants.splice(winnerIndex, 1);
+                isDrawing = false;
+                
+                if (remainingParticipants.length > 0) {
+                    drawButton.disabled = false;
+                } else {
+                    setTimeout(() => { alert("所有人都抽完囉！"); }, 500);
+                }
+                setTimeout(() => {
+                    winnerDisplay.style.transform = 'scale(1)';
+                    winnerDisplay.style.color = '';
+                }, 1500);
+            }, 3000);
+        });
+
+        // --- 程式入口 ---
+        document.addEventListener('DOMContentLoaded', loadParticipants);
+    </script>
+</body>
+</html>
