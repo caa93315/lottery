@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星辰抽獎系統 - v6.0 字體可調版</title>
+    
+    <style>
+        body {
+            background-color: #0a192f;
+            color: #e6f1ff;
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .lottery-container {
+            text-align: center;
+            background-color: #172a45;
+            padding: 20px 40px 40px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: #a7b5ff;
+        }
+
+        /* --- 編輯區塊 --- */
+        .settings-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px; /* 縮小一點間距 */
+        }
+
+        /* --- ★ 新增：字體控制區樣式 ★ --- */
+        .font-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-font {
+            background-color: #3A75C4; /* 同編輯鈕顏色 */
+            box-shadow: 0 4px #265086;
+            padding: 5px 15px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        .btn-font:hover {
+            background-color: #265086;
+        }
+        /* --- 字體控制區樣式結束 --- */
+
+
+        .edit-panel {
+            background-color: #0a192f;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .edit-panel textarea {
+            width: 95%;
+            height: 120px;
+            background-color: #e6f1ff;
+            border: 2px solid #a7b5ff;
+            border-radius: 5px;
+            font-size: 1em;
+            padding: 10px;
+            color: #0a192f;
+        }
+
+        .edit-panel p {
+            font-size: 0.9em;
+            color: #8892b0;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        .display-board {
+            background-color: #0a192f;
+            border: 3px solid #a7b5ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            max-height: 300px;
+            /* ★ 關鍵：字體大小會由 JS 控制 */
+            font-size: 1rem; /* 這是基準 100% */
+            transition: font-size 0.3s ease; /* 增加過渡動畫 */
+        }
+        
+        .winner-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 1.2em;
+            line-height: 1.7;
+            text-align: left;
+        }
+        .winner-list li {
+            margin-bottom: 5px;
+        }
+        .winner-list .winner-name {
+            color: #f1c40f; 
+            font-weight: bold;
+        }
+        .winner-list .prize-name {
+            color: #64ffda;
+        }
+
+        .winner-title {
+            font-size: 1.3em;
+            color: #64ffda;
+            margin-bottom: 15px;
+        }
+
+        .winner-placeholder {
+            color: #8892b0;
+            font-size: 1.5em;
+        }
+
+        /* --- 抽獎控制區 --- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .prize-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prize-select-wrapper label {
+            font-size: 1.2em;
+            color: #ccd6f6;
+        }
+
+        #prize-select {
+            height: 45px;
+            font-size: 1.1em;
+            background-color: #e6f1ff;
+            border: 2px solid #a7b5ff;
+            border-radius: 8px;
+            color: #0a192f;
+            padding: 0 10px;
+        }
+
+        .btn {
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin: 5px;
+        }
+        
+        #draw-button {
+            background-color: #BF55EC;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            box-shadow: 0 5px #8A2BE2;
+        }
+        #draw-button:hover { background-color: #9B30FF; }
+        #draw-button:active { transform: translateY(2px); box-shadow: 0 3px #8A2BE2; }
+        #draw-button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: 0 5px #7f8c8d; }
+
+        .edit-btn { background-color: #3A75C4; box-shadow: 0 4px #265086; }
+        .edit-btn:hover { background-color: #265086; }
+
+        .save-btn { background-color: #64ffda; color: #0a192f; box-shadow: 0 4px #11a387; }
+        .save-btn:hover { background-color: #11a387; }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #8892b0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lottery-container">
+        <header>
+            <h1>星辰抽獎系統</h1>
+            <p>v6.0 - 字體可調版</p>
+        </header>
+
+        <main>
+            <div class="settings-container">
+                <button id="edit-lists-button" class="btn edit-btn">編輯名單與獎項</button>
+            </div>
+            
+            <div class="font-controls">
+                <span style="color: #ccd6f6; font-size: 0.9em;">調整字體：</span>
+                <button id="font-decrease" class="btn btn-font">-</button>
+                <button id="font-reset" class="btn btn-font">重設</button>
+                <button id="font-increase" class="btn btn-font">+</button>
+            </div>
+
+            <div id="edit-panels-container" class="hidden">
+                <div class="edit-panel">
+                    <p>請輸入參加者名單（一行一個）</p>
+                    <textarea id="participants-input" placeholder="例如：&#10;陳金城&#10;林美麗&#10;黃大同"></textarea>
+                    <button id="save-participants-button" class="btn save-btn">儲存名單</button>
+                </div>
+                <div class="edit-panel">
+                    <p>請輸入獎項列表（格式：獎品名稱, 數量）</p>
+                    <textarea id="prizes-input" placeholder="例如：&#10;頭獎：星際飛船, 1&#10;二獎：能量水晶, 5&#10;普獎：紀念徽章, 20"></textarea>
+                    <button id="save-prizes-button" class="btn save-btn">儲存獎項</button>
+                </div>
+            </div>
+
+            <div class="display-board">
+                <div id="winner-display" class="winner-placeholder">請設定名單並開始</div>
+            </div>
+            
+            <div class="controls">
+                <div class="prize-select-wrapper">
+                    <label for="prize-select">抽獎項：</label>
+                    <select id="prize-select">
+                        <option value="">請先儲存獎項</option>
+                    </select>
+                </div>
+                <button id="draw-button" class="btn">開始抽獎！</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>由AI一半打造</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- 預設資料 ---
+        const defaultParticipants = [
+            '星際領航員', '銀河探險家', '時空旅人', '光年之外', '闇黑物質',
+            '夸克', '中子星', '超新星', '白洞', '蟲洞'
+        ];
+        const defaultPrizes = [
+            "頭獎：星際飛船, 1",
+            "二獎：能量水晶, 3",
+            "普獎：紀念徽章, 5"
+        ];
+        
+        // --- ★ 新增：字體設定常數 ---
+        const FONT_SIZE_KEY = 'star_lottery_font_size_v6';
+        const DEFAULT_FONT_SIZE = 1; // 1rem (100%)
+        const FONT_STEP = 0.1; // 每次調整 0.1rem
+        const MIN_FONT_SIZE = 0.5; // 最小 0.5rem (50%)
+        const MAX_FONT_SIZE = 2.0; // 最大 2rem (200%)
+
+        // --- 核心變數 ---
+        let participants = []; 
+        let remainingParticipants = []; 
+        let prizes = []; 
+        let isDrawing = false;
+        let currentFontSize = DEFAULT_FONT_SIZE; // ★ 新增：目前字體大小
+
+        const PARTICIPANTS_KEY = 'star_lottery_participants_v5';
+        const PRIZES_KEY = 'star_lottery_prizes_v5';
+
+        // --- ★★★ 程式入口 ★★★ ---
+        // ★ 修正：把所有 DOM 相關的程式碼都放進來，確保頁面載入完成
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DOM 元件 ---
+            const winnerDisplay = document.getElementById('winner-display');
+            const drawButton = document.getElementById('draw-button');
+            const prizeSelect = document.getElementById('prize-select');
+            const editListsButton = document.getElementById('edit-lists-button');
+            const editPanelsContainer = document.getElementById('edit-panels-container');
+            const participantsInput = document.getElementById('participants-input');
+            const saveParticipantsButton = document.getElementById('save-participants-button');
+            const prizesInput = document.getElementById('prizes-input');
+            const savePrizesButton = document.getElementById('save-prizes-button');
+            
+            // --- ★ 新增：獲取新元件 ---
+            const displayBoard = document.querySelector('.display-board');
+            const fontIncreaseBtn = document.getElementById('font-increase');
+            const fontDecreaseBtn = document.getElementById('font-decrease');
+            const fontResetBtn = document.getElementById('font-reset');
+
+            // --- ★ 新增：字體功能函數 ---
+            
+            /**
+             * 套用字體大小到顯示板
+             * @param {number} size - 基礎字體大小 (rem)
+             */
+            function applyFontSize(size) {
+                if (displayBoard) {
+                    displayBoard.style.fontSize = `${size}rem`;
+                }
+            }
+
+            /**
+             * 改變字體大小
+             * @param {number} amount - 增加或減少的量
+             */
+            function changeFontSize(amount) {
+                let newSize = currentFontSize + amount;
+                // 處理浮點數精度問題
+                newSize = Math.round(newSize * 10) / 10; 
+                // 限制最大最小值
+                newSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, newSize));
+                
+                currentFontSize = newSize;
+                applyFontSize(currentFontSize);
+                localStorage.setItem(FONT_SIZE_KEY, currentFontSize);
+            }
+
+            /**
+             * 重設字體大小
+             */
+            function resetFontSize() {
+                currentFontSize = DEFAULT_FONT_SIZE;
+                applyFontSize(currentFontSize);
+                localStorage.setItem(FONT_SIZE_KEY, currentFontSize);
+            }
+
+            // --- 核心功能 ---
+            function loadData() {
+                // 載入名單
+                const savedParticipants = localStorage.getItem(PARTICIPANTS_KEY);
+                participants = savedParticipants ? JSON.parse(savedParticipants) : [...defaultParticipants];
+                participantsInput.value = participants.join('\n');
+                
+                // 載入獎品
+                const savedPrizes = localStorage.getItem(PRIZES_KEY);
+                const prizeLines = savedPrizes ? JSON.parse(savedPrizes) : [...defaultPrizes];
+                prizesInput.value = prizeLines.join('\n');
+
+                parseAndSavePrizes(prizeLines); 
+                remainingParticipants = [...participants]; 
+                updatePrizeSelect(); 
+                updateDisplayStatus();
+
+                // ★ 新增：載入儲存的字體大小
+                const savedFontSize = localStorage.getItem(FONT_SIZE_KEY);
+                if (savedFontSize) {
+                    currentFontSize = parseFloat(savedFontSize);
+                }
+                applyFontSize(currentFontSize); // 在此套用
+            }
+
+            function saveParticipants() {
+                const newParticipants = participantsInput.value.split('\n')
+                                            .map(name => name.trim())
+                                            .filter(name => name !== '');
+                if (newParticipants.length === 0) {
+                    alert('參加者名單不能是空的！');
+                    return;
+                }
+                participants = newParticipants;
+                remainingParticipants = [...participants]; 
+                localStorage.setItem(PARTICIPANTS_KEY, JSON.stringify(participants));
+                alert(`參加者名單已更新！總共有 ${participants.length} 位。`);
+                updateDisplayStatus();
+            }
+
+            function parseAndSavePrizes(prizeLines) {
+                prizes = [];
+                let hasError = false;
+                for (const line of prizeLines) {
+                    if (line.trim() === '') continue;
+                    const parts = line.split(',');
+                    if (parts.length !== 2 || isNaN(parseInt(parts[1], 10))) {
+                        hasError = true;
+                        continue;
+                    }
+                    const name = parts[0].trim();
+                    const quantity = parseInt(parts[1], 10);
+                    if (quantity > 0) {
+                        prizes.push({ name: name, quantity: quantity, originalQuantity: quantity });
+                    }
+                }
+                if (hasError) {
+                    alert('部分獎項格式不正確（應為：獎品名稱, 數量），已自動忽略。');
+                }
+            }
+            
+            function savePrizes() {
+                const prizeLines = prizesInput.value.split('\n').filter(line => line.trim() !== '');
+                if (prizeLines.length === 0) {
+                    alert('獎項列表不能是空的！');
+                    return;
+                }
+                
+                parseAndSavePrizes(prizeLines);
+                localStorage.setItem(PRIZES_KEY, JSON.stringify(prizeLines));
+                alert('獎項列表已更新！');
+                updatePrizeSelect();
+                updateDisplayStatus();
+            }
+
+            function updatePrizeSelect() {
+                prizeSelect.innerHTML = '';
+                let hasAvailablePrizes = false;
+                if (prizes.length === 0) {
+                    prizeSelect.options.add(new Option('請先儲存獎項', ''));
+                } else {
+                    prizes.forEach((prize, index) => {
+                        if (prize.quantity > 0) {
+                            const text = `${prize.name} (剩 ${prize.quantity} 個)`;
+                            prizeSelect.options.add(new Option(text, index));
+                            hasAvailablePrizes = true;
+                        }
+                    });
+                    if (!hasAvailablePrizes) {
+                        prizeSelect.options.add(new Option('所有獎項均已抽完', ''));
+                    }
+                }
+                drawButton.disabled = !hasAvailablePrizes || remainingParticipants.length === 0 || isDrawing;
+            }
+
+            function updateDisplayStatus() {
+                const totalPrizes = prizes.reduce((sum, p) => sum + p.quantity, 0);
+                
+                if (remainingParticipants.length === 0) {
+                    winnerDisplay.innerHTML = `<div class="winner-placeholder">所有參加者都已中獎！</div>`;
+                    drawButton.disabled = true;
+                } else if (totalPrizes === 0) {
+                    winnerDisplay.innerHTML = `<div class="winner-placeholder">所有獎項都已抽完！</div>`;
+                    drawButton.disabled = true;
+                } else {
+                     winnerDisplay.innerHTML = `<div class="winner-placeholder">尚有 ${remainingParticipants.length} 人 / ${totalPrizes} 獎項等待抽出</div>`;
+                     drawButton.disabled = false;
+                }
+            }
+
+            function drawWinners() {
+                if (isDrawing) return;
+                const selectedPrizeIndex = prizeSelect.value;
+
+                if (selectedPrizeIndex === '') {
+                    alert('請選擇一個有效的獎項！');
+                    return;
+                }
+                
+                const prize = prizes[selectedPrizeIndex];
+                if (prize.quantity <= 0) {
+                    alert('這個獎項已經抽完了！');
+                    return;
+                }
+                
+                let drawCount = prize.quantity;
+                if (drawCount > remainingParticipants.length) {
+                    drawCount = remainingParticipants.length;
+                    alert(`參加人數不足，${prize.name} 將只抽出 ${drawCount} 位。`);
+                }
+
+                isDrawing = true;
+                drawButton.disabled = true;
+                winnerDisplay.innerHTML = `<div class="winner-placeholder">正在抽出【${prize.name}】...</div>`;
+
+                let intervalId = setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * remainingParticipants.length);
+                    winnerDisplay.textContent = remainingParticipants[randomIndex];
+                }, 100);
+
+                // 揭曉結果
+                setTimeout(() => {
+                    clearInterval(intervalId);
+                    const winners = [];
+                    for (let i = 0; i < drawCount; i++) {
+                        const winnerIndex = Math.floor(Math.random() * remainingParticipants.length);
+                        const winner = remainingParticipants.splice(winnerIndex, 1)[0];
+                        winners.push(winner);
+                    }
+
+                    prize.quantity = 0; // 這個獎項一次抽完
+
+                    // 1. 顯示結果
+                    let resultHtml = `<div class="winner-title">🎉 恭喜【${prize.name}】中獎者！ 🎉</div>`;
+                    resultHtml += '<ul class="winner-list">';
+                    winners.forEach(winner => {
+                        resultHtml += `<li><span class="winner-name">${winner}</span></li>`;
+                    });
+                    resultHtml += '</ul>';
+                    winnerDisplay.innerHTML = resultHtml;
+                    
+                    isDrawing = false;
+                    
+                    // 2. 更新下拉選單
+                    updatePrizeSelect(); 
+                    
+                    // 3. 檢查狀態並決定按鈕
+                    const totalPrizesLeft = prizes.reduce((sum, p) => sum + p.quantity, 0);
+                    
+                    if (remainingParticipants.length === 0) {
+                        drawButton.disabled = true;
+                        setTimeout(() => { alert("所有參加者都已中獎！"); }, 500);
+                    } else if (totalPrizesLeft === 0) {
+                        drawButton.disabled = true;
+                        setTimeout(() => { alert("所有獎項都已抽完！"); }, 500);
+                    } else {
+                        drawButton.disabled = false; // 還有東西可以抽，恢復按鈕
+                    }
+
+                    // 4. 延遲 1.5 秒後，才 *附加* 狀態
+                    setTimeout(() => {
+                        if (drawButton.disabled === false) { 
+                            const placeholderText = `尚有 ${remainingParticipants.length} 人 / ${totalPrizesLeft} 獎項等待抽出`;
+                            winnerDisplay.innerHTML += `<div class="winner-placeholder" style="margin-top:15px;">${placeholderText}</div>`;
+                        }
+                    }, 1500); 
+
+                }, 3000); 
+            }
+
+            // --- 事件監聽 ---
+            editListsButton.addEventListener('click', () => {
+                editPanelsContainer.classList.toggle('hidden');
+            });
+            saveParticipantsButton.addEventListener('click', saveParticipants);
+            savePrizesButton.addEventListener('click', savePrizes);
+            drawButton.addEventListener('click', drawWinners);
+
+            // --- ★ 新增：字體按鈕監聽 ---
+            fontIncreaseBtn.addEventListener('click', () => changeFontSize(FONT_STEP));
+            fontDecreaseBtn.addEventListener('click', () => changeFontSize(-FONT_STEP));
+            fontResetBtn.addEventListener('click', resetFontSize);
+
+
+            // --- 啟動 ---
+            loadData();
+        });
+    </script>
+</body>
+</html>
